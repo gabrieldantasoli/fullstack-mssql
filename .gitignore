@@ -1,0 +1,64 @@
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# =========================
+# Env / Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Logs
+# =========================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Node / JS
+# =========================
+node_modules/
+**/node_modules/
+
+# =========================
+# Builds / Outputs
+# =========================
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+
+# Vite
+web/dist/
+web/.vite/
+
+# =========================
+# Cache / Temp
+# =========================
+.cache/
+.tmp/
+temp/
+tmp/
+
+# =========================
+# Docker / volumes (local)
+# =========================
+# (volume do compose não vira arquivo aqui, mas deixo padrões)
+**/mssql-data/
+**/*.bak
+
+# =========================
+# Misc
+# =========================
+*.env.local

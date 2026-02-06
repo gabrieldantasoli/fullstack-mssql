@@ -1,0 +1,19 @@
+IF DB_ID('appdb') IS NULL
+BEGIN
+  CREATE DATABASE appdb;
+END
+GO
+
+USE appdb;
+GO
+
+IF OBJECT_ID('dbo.tasks', 'U') IS NULL
+BEGIN
+  CREATE TABLE dbo.tasks (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    title NVARCHAR(255) NOT NULL,
+    done BIT NOT NULL CONSTRAINT DF_tasks_done DEFAULT (0),
+    created_at DATETIME2 NOT NULL CONSTRAINT DF_tasks_created DEFAULT (SYSDATETIME())
+  );
+END
+GO
