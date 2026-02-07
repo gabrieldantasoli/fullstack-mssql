@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { getPool, sql } from "./db";
+import usersRoutes from "./routes/users";
 
 const app = express();
 app.use(express.json());
@@ -98,3 +99,5 @@ const port = Number(process.env.PORT || 3001);
 app.listen(port, () => {
   console.log(`API on http://localhost:${port}`);
 });
+
+app.use("/api", usersRoutes);

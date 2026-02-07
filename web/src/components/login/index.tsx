@@ -23,8 +23,6 @@ export default function Login() {
       <section className={styles.card} aria-label="Tela de login">
         <Logo />
 
-        <h1 className={styles.title}>Entrar</h1>
-
         <form className={styles.form} onSubmit={onSubmit}>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="login">

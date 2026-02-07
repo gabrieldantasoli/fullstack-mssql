@@ -277,3 +277,62 @@ BEGIN
   CREATE UNIQUE INDEX UX_pages_evento ON dbo.pages(evento_id) WHERE evento_id IS NOT NULL;
 END
 GO
+
+
+
+
+
+--  PROCEDURES:
+USE appdb;
+GO
+/* =========================================================
+   PROCEDURE: criar usuário (insert) e retornar o ID criado
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_users_create
+  @nome  NVARCHAR(150),
+  @login NVARCHAR(100),
+  @senha NVARCHAR(255)
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @nome IS NULL OR LTRIM(RTRIM(@nome)) = N''
+    THROW 50001, 'nome é obrigatório', 1;
+
+  IF @login IS NULL OR LTRIM(RTRIM(@login)) = N''
+    THROW 50002, 'login é obrigatório', 1;
+
+  IF @senha IS NULL OR LTRIM(RTRIM(@senha)) = N''
+    THROW 50003, 'senha é obrigatória', 1;
+
+  IF EXISTS (SELECT 1 FROM dbo.users WHERE login = @login)
+    THROW 50004, 'login já existe', 1;
+
+  INSERT INTO dbo.users (nome, login, senha)
+  VALUES (@nome, @login, @senha);
+
+  DECLARE @new_id INT = SCOPE_IDENTITY();
+
+  SELECT id, nome, login
+  FROM dbo.users
+  WHERE id = @new_id;
+END
+GO
+
+/* =========================================================
+   PROCEDURE: buscar usuário por ID
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_users_get_by_id
+  @id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @id IS NULL OR @id <= 0
+    THROW 50005, 'id inválido', 1;
+
+  SELECT id, nome, login
+  FROM dbo.users
+  WHERE id = @id;
+END
+GO
