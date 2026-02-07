@@ -1,0 +1,30 @@
+.wrap {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  user-select: none;
+}
+
+.brand {
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  font-size: 50pt;
+  line-height: 1;
+}
+
+.gab {
+  color: var(--green-dark);
+}
+
+.in {
+  color: var(--yellow);
+}
+
+.subtitle {
+  font-size: 20pt;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.subGreen { color: var(--green-dark); }
+.subYellow { color: var(--yellow); }

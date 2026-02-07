@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import styles from "../login/index.module.css";
-import { Logo } from "../logo";
+import { Logo } from "../logos/big";
 
 export default function Cadastro() {
   const [nome, setNome] = useState("");

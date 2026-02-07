@@ -1,21 +1,11 @@
-import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { useAuth } from "./AuthProvider";
 
 export default function RequireAuth({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<"loading" | "ok" | "no">("loading");
+  const { status } = useAuth();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
-        setState(res.ok ? "ok" : "no");
-      } catch {
-        setState("no");
-      }
-    })();
-  }, []);
+  if (status === "loading") return null;
+  if (status === "guest") return <Navigate to="/login" replace />;
 
-  if (state === "loading") return null;
-  if (state === "no") return <Navigate to="/login" replace />;
   return <>{children}</>;
 }

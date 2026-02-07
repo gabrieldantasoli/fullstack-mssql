@@ -3,16 +3,18 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import App from "./App";
-
-import "./styles/theme.css";
+import "./index.css";
 import "./styles/global.css";
+import "./styles/theme.css";
+import { AuthProvider } from "./auth/AuthProvider";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
-      <Toaster position="top-right" />
-
+      <AuthProvider>
+        <App />
+        <Toaster position="top-right" />
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
