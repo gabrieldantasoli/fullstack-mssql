@@ -9,9 +9,10 @@ import GabinetesPage from "./app/layout/pages/meus-gabinetes";
 import SolicitacoesPage from "./app/layout/pages/solicitacoes";
 import FavoritosPage from "./app/layout/pages/favoritos";
 import Acessos from "./app/layout/pages/acessos";
-import Home from "./app/layout/pages/home"; // (você disse que existe)
+import Home from "./app/layout/pages/home";
 import GabinetesTodosPage from "./app/layout/pages/gabinetes";
 import NovoProcessoPage from "./app/layout/pages/processos/novo";
+import ProcessoPdfPage from "./app/layout/pages/processos/view";
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="meus-acessos" element={<Acessos />} />
         <Route path="processos" element={<ProcessosPage />} />
         <Route path="processos/novo" element={<NovoProcessoPage />} />
+        <Route path="processos/:id" element={<ProcessoPdfPage />} />
 
         <Route path="*" element={<Navigate to="/app/home" replace />} />
       </Route>

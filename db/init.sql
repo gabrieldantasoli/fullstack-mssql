@@ -1310,3 +1310,94 @@ BEGIN
   WHERE id = @arquivo_id;
 END
 GO
+
+USE appdb;
+GO
+
+/* =========================================================
+   LISTAR METADADOS DO ARQUIVO (somente se user tem acesso)
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_metadado_list_for_user
+  @user_id INT,
+  @arquivo_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 52101, 'user_id inválido', 1;
+
+  IF @arquivo_id IS NULL OR @arquivo_id <= 0
+    THROW 52102, 'arquivo_id inválido', 1;
+
+  -- Permissão: user precisa ter solicitação atendida para o gabinete do arquivo
+  IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.arquivo a
+    WHERE a.id = @arquivo_id
+      AND EXISTS (
+        SELECT 1
+        FROM dbo.solicitacao s
+        WHERE s.user_id = @user_id
+          AND s.gabinete_id = a.gabinete_id
+          AND s.atendido = 1
+      )
+  )
+    THROW 52103, 'sem permissão para acessar este arquivo', 1;
+
+  SELECT
+    m.id,
+    m.nome,
+    m.valor
+  FROM dbo.metadado m
+  WHERE m.arquivo_id = @arquivo_id
+  ORDER BY m.nome ASC, m.id ASC;
+END
+GO
+
+/* =========================================================
+   LISTAR EVENTOS DO ARQUIVO (somente se user tem acesso)
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_evento_list_for_user
+  @user_id INT,
+  @arquivo_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 52111, 'user_id inválido', 1;
+
+  IF @arquivo_id IS NULL OR @arquivo_id <= 0
+    THROW 52112, 'arquivo_id inválido', 1;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.arquivo a
+    WHERE a.id = @arquivo_id
+      AND EXISTS (
+        SELECT 1
+        FROM dbo.solicitacao s
+        WHERE s.user_id = @user_id
+          AND s.gabinete_id = a.gabinete_id
+          AND s.atendido = 1
+      )
+  )
+    THROW 52113, 'sem permissão para acessar este arquivo', 1;
+
+  SELECT
+    e.id,
+    e.nome,
+    e.created_at,
+    e.arquivo_id,
+    e.status_evento_id,
+    se.nome AS status_nome,
+    e.procurador_id,
+    p.nome AS procurador_nome
+  FROM dbo.evento e
+  LEFT JOIN dbo.status_evento se ON se.id = e.status_evento_id
+  LEFT JOIN dbo.procurador p ON p.id = e.procurador_id
+  WHERE e.arquivo_id = @arquivo_id
+  ORDER BY e.created_at DESC, e.id DESC;
+END
+GO

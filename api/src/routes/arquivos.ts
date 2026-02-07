@@ -43,7 +43,52 @@ router.get("/arquivos", requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/arquivos (multipart/form-data)
+// GET /api/arquivos/:id/metadados
+router.get("/arquivos/:id/metadados", requireAuth, async (req, res) => {
+  try {
+    const userId = Number(req.user!.id);
+    const arquivo_id = Number(req.params.id);
+
+    if (!Number.isFinite(arquivo_id) || arquivo_id <= 0) {
+      return res.status(400).json({ error: "INVALID_ID", message: "ID inválido." });
+    }
+
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input("user_id", sql.Int, userId)
+      .input("arquivo_id", sql.Int, arquivo_id)
+      .execute("dbo.usp_metadado_list_for_user");
+
+    return res.json(result.recordset);
+  } catch (err: any) {
+    return res.status(500).json({ error: "DB_ERROR", message: String(err?.message ?? "") });
+  }
+});
+
+// GET /api/arquivos/:id/eventos
+router.get("/arquivos/:id/eventos", requireAuth, async (req, res) => {
+  try {
+    const userId = Number(req.user!.id);
+    const arquivo_id = Number(req.params.id);
+
+    if (!Number.isFinite(arquivo_id) || arquivo_id <= 0) {
+      return res.status(400).json({ error: "INVALID_ID", message: "ID inválido." });
+    }
+
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input("user_id", sql.Int, userId)
+      .input("arquivo_id", sql.Int, arquivo_id)
+      .execute("dbo.usp_evento_list_for_user");
+
+    return res.json(result.recordset);
+  } catch (err: any) {
+    return res.status(500).json({ error: "DB_ERROR", message: String(err?.message ?? "") });
+  }
+});
+
 router.post("/arquivos", requireAuth, upload.single("pdf"), async (req, res) => {
   try {
     const userId = Number(req.user!.id);
@@ -86,11 +131,26 @@ router.post("/arquivos", requireAuth, upload.single("pdf"), async (req, res) => 
       });
     }
 
+    const [uRes, gRes] = await Promise.all([
+      pool
+        .request()
+        .input("id", sql.Int, userId)
+        .query(`SELECT TOP 1 nome FROM dbo.users WHERE id = @id`),
+
+      pool
+        .request()
+        .input("id", sql.Int, gabinete_id)
+        .query(`SELECT TOP 1 nome FROM dbo.gabinete WHERE id = @id`),
+    ]);
+
+    const userNome = String(uRes.recordset?.[0]?.nome || `user#${userId}`);
+    const gabineteNome = String(gRes.recordset?.[0]?.nome || `gabinete#${gabinete_id}`);
+
     const metadados: Array<{ nome: string; valor: string }> = [
       { nome: "upload.original_filename", valor: file.originalname },
-      { nome: "upload.mime_type", valor: file.mimetype },
       { nome: "upload.size_bytes", valor: String(file.size) },
-      { nome: "upload.uploaded_by_user_id", valor: String(userId) },
+      { nome: "upload.uploaded_by_user", valor: userNome },
+      { nome: "upload.gabinete_nome", valor: gabineteNome },
       { nome: "upload.uploaded_at", valor: new Date().toISOString() },
     ];
 
@@ -124,9 +184,7 @@ router.post("/arquivos", requireAuth, upload.single("pdf"), async (req, res) => 
         add("pdf.xmp_present", "true");
         add("pdf.xmp_length", String(m.length));
       }
-    } catch {
-      metadados.push({ nome: "pdf.metadata_parse_failed", valor: "true" });
-    }
+    } catch {}
 
     const metadados_json = JSON.stringify(metadados);
 
@@ -139,7 +197,7 @@ router.post("/arquivos", requireAuth, upload.single("pdf"), async (req, res) => 
       .input("descricao", sql.NVarChar(1000), descricao)
       .input("pdf", sql.VarBinary(sql.MAX), pdfBuffer)
       .input("txt", sql.NVarChar(sql.MAX), null)
-      .input("metadados_json", sql.NVarChar(sql.MAX), metadados_json) // ✅ precisa estar na procedure
+      .input("metadados_json", sql.NVarChar(sql.MAX), metadados_json)
       .execute("dbo.usp_arquivo_create");
 
     return res.status(201).json(result.recordset?.[0] ?? null);

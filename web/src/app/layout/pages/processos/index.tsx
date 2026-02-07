@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileDown,
+  Eye,
 } from "lucide-react";
 import styles from "./index.module.css";
 
@@ -174,6 +175,10 @@ export default function ProcessosPage() {
     }
   }
 
+  function openView(id: number) {
+    navigate(`/app/processos/${id}`);
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -271,7 +276,7 @@ export default function ProcessosPage() {
                   <th>Gabinete</th>
                   <th>Status</th>
                   <th>Criado em</th>
-                  <th style={{ width: 90, textAlign: "right" }}>Ações</th>
+                  <th style={{ width: 120, textAlign: "right" }}>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -284,9 +289,27 @@ export default function ProcessosPage() {
                     </td>
                     <td className={styles.tdMuted}>{fmtDate(a.created_at)}</td>
                     <td style={{ textAlign: "right" }}>
-                      <button className={styles.ghostBtn} type="button" onClick={() => openPdf(a.id)} title="Abrir PDF">
-                        <FileDown className={styles.btnIcon} aria-hidden="true" />
-                      </button>
+                      <div className={styles.actions}>
+                        <button
+                          className={styles.ghostBtn}
+                          type="button"
+                          onClick={() => openView(a.id)}
+                          title="Ver detalhes"
+                          aria-label="Ver detalhes"
+                        >
+                          <Eye className={styles.btnIcon} aria-hidden="true" />
+                        </button>
+
+                        <button
+                          className={styles.ghostBtn}
+                          type="button"
+                          onClick={() => openPdf(a.id)}
+                          title="Abrir PDF"
+                          aria-label="Abrir PDF"
+                        >
+                          <FileDown className={styles.btnIcon} aria-hidden="true" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

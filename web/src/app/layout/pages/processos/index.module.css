@@ -225,6 +225,11 @@
   font-size: 12px;
 }
 
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 /* Ações */
 .ghostBtn {
   width: 38px;
