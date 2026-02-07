@@ -17,13 +17,16 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
-    "mssql": "^12.2.0"
+    "mssql": "^12.2.0",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/mssql": "^9.1.9",
+    "@types/multer": "^2.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }

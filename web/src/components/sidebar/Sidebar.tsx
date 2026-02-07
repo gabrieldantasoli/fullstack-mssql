@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import styles from "./Sidebar.module.css";
 import { Logo } from "../logos/small";
-import { KeyRound } from "lucide-react";
+import { Building2, KeyRound } from "lucide-react";
 import { useAuth } from "../../auth/AuthProvider";
 
 function IconProcessos() {
@@ -14,14 +14,6 @@ function IconProcessos() {
   );
 }
 
-function IconGabinetes() {
-  return (
-    <svg viewBox="0 0 24 24" className={styles.icon} aria-hidden="true">
-      <path d="M4 10.5 12 4l8 6.5V20a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 20v-9.5Z" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path d="M9.5 21v-7h5v7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function IconSolicitacoes() {
   return (
@@ -81,8 +73,13 @@ export default function Sidebar() {
           </NavLink>
 
           <NavLink to="/app/gabinetes" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>
-            <IconGabinetes />
+            <Building2 className={styles.icon} aria-hidden="true" />
             <span>Gabinetes</span>
+          </NavLink>
+
+          <NavLink to="/app/meus-gabinetes" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>
+            <Building2 className={styles.icon} aria-hidden="true" />
+            <span>Meus Gabinetes</span>
           </NavLink>
 
           <NavLink to="/app/solicitacoes" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>

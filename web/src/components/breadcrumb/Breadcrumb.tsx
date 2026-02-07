@@ -3,11 +3,12 @@ import { ChevronRight } from "lucide-react";
 import styles from "./Breadcrumb.module.css";
 
 const LABELS: Record<string, string> = {
-  app: "Início",
-  processos: "Processos",
-  gabinetes: "Gabinetes",
-  solicitacoes: "Solicitações",
-  favoritos: "Favoritos",
+  "app": "Início",
+  "processos": "Processos",
+  "gabinetes": "Gabinetes",
+  "meus-gabinetes": "Meus Gabinetes",
+  "solicitacoes": "Solicitações",
+  "favoritos": "Favoritos",
   "meus-acessos": "Meus Acessos",
 };
 

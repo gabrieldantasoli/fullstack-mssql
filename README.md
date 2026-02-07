@@ -118,3 +118,11 @@ docker compose restart db
 
 docker compose down -v
 docker compose up -d --build db
+
+
+Na raiz
+set -a; source .env; set +a
+
+docker exec -it mssql /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P "$SA_PASSWORD" -C -I \
+  -i /scripts/init.sql

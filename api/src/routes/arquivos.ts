@@ -1,0 +1,190 @@
+import { Router } from "express";
+import multer from "multer";
+import { getPool, sql } from "../db";
+import { requireAuth } from "../middleware/requireAuth";
+
+const router = Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype !== "application/pdf") {
+      return cb(new Error("PDF_ONLY"));
+    }
+    cb(null, true);
+  },
+});
+
+// GET /api/arquivos
+router.get("/arquivos", requireAuth, async (req, res) => {
+  try {
+    const userId = Number(req.user!.id);
+    const q = String(req.query.q ?? "").trim() || null;
+
+    const statusIdRaw = String(req.query.status_arquivo_id ?? "").trim();
+    const status_arquivo_id = statusIdRaw ? Number(statusIdRaw) : null;
+
+    const gabIdRaw = String(req.query.gabinete_id ?? "").trim();
+    const gabinete_id = gabIdRaw ? Number(gabIdRaw) : null;
+
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input("user_id", sql.Int, userId)
+      .input("q", sql.NVarChar(200), q)
+      .input("status_arquivo_id", sql.Int, Number.isFinite(Number(status_arquivo_id)) ? (status_arquivo_id as any) : null)
+      .input("gabinete_id", sql.Int, Number.isFinite(Number(gabinete_id)) ? (gabinete_id as any) : null)
+      .execute("dbo.usp_arquivo_list_for_user");
+
+    return res.json(result.recordset);
+  } catch (err: any) {
+    return res.status(500).json({ error: "DB_ERROR", message: String(err?.message ?? "") });
+  }
+});
+
+// POST /api/arquivos (multipart/form-data)
+router.post("/arquivos", requireAuth, upload.single("pdf"), async (req, res) => {
+  try {
+    const userId = Number(req.user!.id);
+
+    const nome_processo = String(req.body?.nome_processo ?? "").trim();
+    const descricaoRaw = String(req.body?.descricao ?? "").trim();
+    const descricao = descricaoRaw ? descricaoRaw : null;
+
+    const gabinete_id = Number(req.body?.gabinete_id);
+
+    if (!nome_processo) {
+      return res.status(400).json({ error: "NOME_REQUIRED", message: "nome_processo é obrigatório." });
+    }
+
+    if (!Number.isFinite(gabinete_id) || gabinete_id <= 0) {
+      return res.status(400).json({ error: "INVALID_GABINETE", message: "gabinete_id inválido." });
+    }
+
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: "PDF_REQUIRED", message: "Envie um PDF." });
+    }
+
+    const pdfBuffer = file.buffer;
+
+    const pool = await getPool();
+
+    const st = await pool.request().query(`
+      SELECT TOP 1 id
+      FROM dbo.status_arquivo
+      WHERE nome = 'entregue'
+    `);
+
+    const status_arquivo_id: number | undefined = st.recordset?.[0]?.id;
+
+    if (!status_arquivo_id) {
+      return res.status(500).json({
+        error: "STATUS_ENTREGUE_NOT_FOUND",
+        message: "Status 'entregue' não encontrado na tabela dbo.status_arquivo.",
+      });
+    }
+
+    const metadados: Array<{ nome: string; valor: string }> = [
+      { nome: "upload.original_filename", valor: file.originalname },
+      { nome: "upload.mime_type", valor: file.mimetype },
+      { nome: "upload.size_bytes", valor: String(file.size) },
+      { nome: "upload.uploaded_by_user_id", valor: String(userId) },
+      { nome: "upload.uploaded_at", valor: new Date().toISOString() },
+    ];
+
+    try {
+      const parsed: any = await pdfParse(pdfBuffer);
+      const info: any = parsed?.info || {};
+
+      const add = (key: string, v: any) => {
+        const s = String(v ?? "").trim();
+        if (s) metadados.push({ nome: key, valor: s });
+      };
+
+      add("pdf.pages", parsed?.numpages);
+      add("pdf.version", parsed?.version);
+
+      add("pdf.title", info.Title);
+      add("pdf.author", info.Author);
+      add("pdf.subject", info.Subject);
+      add("pdf.keywords", info.Keywords);
+      add("pdf.creator", info.Creator);
+      add("pdf.producer", info.Producer);
+      add("pdf.creation_date_raw", info.CreationDate);
+      add("pdf.mod_date_raw", info.ModDate);
+
+      add("pdf.format_version", info.PDFFormatVersion);
+      add("pdf.is_acroform_present", info.IsAcroFormPresent);
+      add("pdf.is_xfa_present", info.IsXFAPresent);
+
+      if (parsed?.metadata) {
+        const m = String(parsed.metadata);
+        add("pdf.xmp_present", "true");
+        add("pdf.xmp_length", String(m.length));
+      }
+    } catch {
+      metadados.push({ nome: "pdf.metadata_parse_failed", valor: "true" });
+    }
+
+    const metadados_json = JSON.stringify(metadados);
+
+    const result = await pool
+      .request()
+      .input("user_id", sql.Int, userId)
+      .input("gabinete_id", sql.Int, gabinete_id)
+      .input("status_arquivo_id", sql.Int, status_arquivo_id)
+      .input("nome_processo", sql.NVarChar(255), nome_processo)
+      .input("descricao", sql.NVarChar(1000), descricao)
+      .input("pdf", sql.VarBinary(sql.MAX), pdfBuffer)
+      .input("txt", sql.NVarChar(sql.MAX), null)
+      .input("metadados_json", sql.NVarChar(sql.MAX), metadados_json) // ✅ precisa estar na procedure
+      .execute("dbo.usp_arquivo_create");
+
+    return res.status(201).json(result.recordset?.[0] ?? null);
+  } catch (err: any) {
+    const msg = String(err?.message ?? "");
+    if (msg.includes("PDF_ONLY")) {
+      return res.status(400).json({ error: "PDF_ONLY", message: "Apenas PDF é permitido." });
+    }
+    return res.status(500).json({ error: "DB_ERROR", message: msg });
+  }
+});
+
+
+// GET /api/arquivos/:id/pdf  (sem regex na rota; valida no handler)
+router.get("/arquivos/:id/pdf", requireAuth, async (req, res) => {
+  try {
+    const userId = Number(req.user!.id);
+    const arquivo_id = Number(req.params.id);
+
+    if (!Number.isFinite(arquivo_id) || arquivo_id <= 0) {
+      return res.status(400).json({ error: "INVALID_ID", message: "ID inválido." });
+    }
+
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input("user_id", sql.Int, userId)
+      .input("arquivo_id", sql.Int, arquivo_id)
+      .execute("dbo.usp_arquivo_get_pdf_for_user");
+
+    const row = result.recordset?.[0];
+    if (!row) return res.status(404).json({ error: "NOT_FOUND" });
+
+    const pdf: Buffer | null = row.pdf ?? null;
+    const nome: string = row.nome_processo ?? "arquivo";
+
+    if (!pdf) return res.status(404).json({ error: "NO_PDF" });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${nome}.pdf"`);
+
+    return res.status(200).send(pdf);
+  } catch (err: any) {
+    return res.status(500).json({ error: "DB_ERROR", message: String(err?.message ?? "") });
+  }
+});
+
+export default router;

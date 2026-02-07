@@ -1,0 +1,259 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* ✅ tudo à esquerda */
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-weight: 900;
+  color: rgba(15, 23, 42, 0.86);
+}
+
+.backBtn:hover {
+  border-color: rgba(4, 157, 217, 0.28);
+  background: rgba(4, 157, 217, 0.10);
+}
+
+.btnIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.titleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.titleIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(15, 23, 42, 0.8);
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 950;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 650;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+.card {
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 14px 34px rgba(2, 8, 23, 0.06);
+  overflow: hidden;
+}
+
+.form {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.55);
+}
+
+.input,
+.select,
+.textarea {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 14px;
+  padding: 12px 12px;
+  font-weight: 750;
+  color: rgba(15, 23, 42, 0.86);
+  outline: none;
+}
+
+.select {
+  height: 44px;
+  padding: 0 12px;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: rgba(4, 157, 217, 0.35);
+  box-shadow: 0 0 0 4px rgba(4, 157, 217, 0.12);
+}
+
+.counter {
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(15, 23, 42, 0.55);
+  align-self: flex-end;
+}
+
+.upload {
+  margin-top: 2px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px;
+  border-radius: 18px;
+  border: 1px dashed rgba(15, 23, 42, 0.20);
+  background: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.uploadBox:hover {
+  border-color: rgba(4, 157, 217, 0.35);
+  background: rgba(4, 157, 217, 0.08);
+}
+
+.uploadIcon {
+  width: 22px;
+  height: 22px;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.uploadText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.uploadText b {
+  font-weight: 950;
+  color: rgba(15, 23, 42, 0.9);
+}
+
+.uploadText span {
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(3, 166, 74, 0.28);
+  background: rgba(3, 166, 74, 0.12);
+  color: rgba(15, 23, 42, 0.9);
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(2, 8, 23, 0.06);
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background: rgba(3, 166, 74, 0.16);
+  border-color: rgba(3, 166, 74, 0.35);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(15, 23, 42, 0.86);
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  border-color: rgba(4, 157, 217, 0.28);
+  background: rgba(4, 157, 217, 0.10);
+}
+
+.secondaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
