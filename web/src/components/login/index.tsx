@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import styles from "./index.module.css";
 import { Logo } from "../logos/big";
+import { useAuth } from "../../auth/AuthProvider";
 
 export default function Login() {
   const [identifier, setIdentifier] = useState("");
@@ -10,6 +11,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login: setAuthedUser } = useAuth();
 
   const canSubmit = useMemo(() => {
     return identifier.trim().length > 0 && senha.trim().length > 0 && !loading;
@@ -25,7 +27,10 @@ export default function Login() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ identifier: identifier.trim(), senha: senha.trim() }),
+        body: JSON.stringify({
+          identifier: identifier.trim(),
+          senha: senha.trim(),
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -35,8 +40,11 @@ export default function Login() {
         return;
       }
 
+      setAuthedUser(data);
+
       toast.success(`Bem-vindo, ${data.nome}!`);
-      navigate("/app");
+
+      navigate("/app/home", { replace: true });
     } catch {
       toast.error("Falha de rede. Verifique a API.");
     } finally {

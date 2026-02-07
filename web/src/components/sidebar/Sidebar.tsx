@@ -3,12 +3,7 @@ import toast from "react-hot-toast";
 import styles from "./Sidebar.module.css";
 import { Logo } from "../logos/small";
 import { KeyRound } from "lucide-react";
-
-// Ajuste o import do Logo conforme seu projeto:
-// - se você tem `src/logos/index.tsx` default export:
-
-// - se você tem `src/logo` com named export, troque para:
-// import { Logo } from "../../logo";
+import { useAuth } from "../../auth/AuthProvider";
 
 function IconProcessos() {
   return (
@@ -58,13 +53,14 @@ function IconSair() {
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   async function handleLogout() {
     try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      await logout();
     } finally {
       toast.success("Sessão encerrada.");
-      navigate("/login");
+      navigate("/login", { replace: true });
     }
   }
 

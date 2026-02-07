@@ -5,59 +5,74 @@ type User = { id: number; nome: string; login: string };
 type AuthStatus = "loading" | "authed" | "guest";
 
 type AuthContextValue = {
-  status: AuthStatus;
-  user: User | null;
-  refresh: () => Promise<void>;
-  setUser: (u: User | null) => void;
+    status: AuthStatus;
+    user: User | null;
+    refresh: () => Promise<void>;
+    setUser: (u: User | null) => void;
+    logout: () => Promise<void>;
+    login: (u: User) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [status, setStatus] = useState<AuthStatus>("loading");
-  const [user, setUser] = useState<User | null>(null);
+    const [status, setStatus] = useState<AuthStatus>("loading");
+    const [user, setUser] = useState<User | null>(null);
 
-  const inFlight = useRef<Promise<void> | null>(null);
+    const inFlight = useRef<Promise<void> | null>(null);
 
-  async function refresh() {
-    if (inFlight.current) return inFlight.current;
+    async function refresh() {
+        if (inFlight.current) return inFlight.current;
 
-    inFlight.current = (async () => {
-      try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
-        if (!res.ok) {
-          setUser(null);
-          setStatus("guest");
-          return;
+        inFlight.current = (async () => {
+            try {
+                const res = await fetch("/api/auth/me", { credentials: "include" });
+                if (!res.ok) {
+                    setUser(null);
+                    setStatus("guest");
+                    return;
+                }
+                const data = (await res.json()) as User;
+                setUser(data);
+                setStatus("authed");
+            } catch {
+                setUser(null);
+                setStatus("guest");
+            } finally {
+                inFlight.current = null;
+            }
+        })();
+
+        return inFlight.current;
+    }
+
+    async function logout() {
+        try {
+            await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        } finally {
+            setUser(null);
+            setStatus("guest");
         }
-        const data = (await res.json()) as User;
-        setUser(data);
+    }
+
+    function login(u: User) {
+        setUser(u);
         setStatus("authed");
-      } catch {
-        setUser(null);
-        setStatus("guest");
-      } finally {
-        inFlight.current = null;
-      }
-    })();
+    }
 
-    return inFlight.current;
-  }
+    useEffect(() => {
+        refresh();
+    }, []);
 
-  useEffect(() => {
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ status, user, refresh, setUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={{ status, user, refresh, setUser, logout, login }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+    return ctx;
 }
