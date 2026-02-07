@@ -1,21 +1,47 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import styles from "./index.module.css";
 import { Logo } from "../logo";
 
 export default function Login() {
-  const [login, setLogin] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const canSubmit = useMemo(() => {
-    return login.trim().length > 0 && senha.trim().length > 0;
-  }, [login, senha]);
+    return identifier.trim().length > 0 && senha.trim().length > 0 && !loading;
+  }, [identifier, senha, loading]);
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
 
-    console.log({ login, senha });
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ identifier: identifier.trim(), senha: senha.trim() }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        toast.error(data?.message || "Credenciais inválidas.");
+        return;
+      }
+
+      toast.success(`Bem-vindo, ${data.nome}!`);
+      navigate("/app");
+    } catch {
+      toast.error("Falha de rede. Verifique a API.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -23,17 +49,19 @@ export default function Login() {
       <section className={styles.card} aria-label="Tela de login">
         <Logo />
 
+        <h1 className={styles.title}>Entrar</h1>
+
         <form className={styles.form} onSubmit={onSubmit}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="login">
+            <label className={styles.label} htmlFor="identifier">
               Usuário
             </label>
             <input
-              id="login"
+              id="identifier"
               className={styles.input}
-              value={login}
-              onChange={(e) => setLogin(e.target.value)}
-              placeholder="Digite seu usuário"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="Digite seu login ou nome"
               autoComplete="username"
             />
           </div>
@@ -54,7 +82,7 @@ export default function Login() {
           </div>
 
           <button className={styles.button} type="submit" disabled={!canSubmit}>
-            Entrar
+            {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 

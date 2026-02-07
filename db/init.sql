@@ -336,3 +336,133 @@ BEGIN
   WHERE id = @id;
 END
 GO
+
+/* =========================================================
+   SESSIONS (sessão no banco)
+   ========================================================= */
+IF OBJECT_ID(N'dbo.sessions', N'U') IS NULL
+BEGIN
+  CREATE TABLE dbo.sessions (
+    session_id UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_sessions PRIMARY KEY,
+    user_id INT NOT NULL,
+    created_at DATETIME2 NOT NULL CONSTRAINT DF_sessions_created DEFAULT (SYSDATETIME()),
+    expires_at DATETIME2 NOT NULL,
+    revoked_at DATETIME2 NULL,
+
+    CONSTRAINT FK_sessions_users FOREIGN KEY (user_id) REFERENCES dbo.users(id)
+  );
+END
+GO
+
+IF NOT EXISTS (
+  SELECT 1 FROM sys.indexes
+  WHERE name = N'IX_sessions_user_id' AND object_id = OBJECT_ID(N'dbo.sessions')
+)
+BEGIN
+  CREATE INDEX IX_sessions_user_id ON dbo.sessions(user_id);
+END
+GO
+
+/* =========================================================
+   PROCEDURE: LOGIN (busca por login OU nome)
+   - recebe @senha para cumprir assinatura pedida,
+     MAS a validação real ocorre na API (bcrypt).
+   - retorna id, nome, login, senha(hash)
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_auth_login
+  @identifier NVARCHAR(100),
+  @senha NVARCHAR(255)
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @identifier IS NULL OR LTRIM(RTRIM(@identifier)) = N''
+    THROW 50010, 'identifier é obrigatório', 1;
+
+  DECLARE @cnt INT;
+
+  -- 1) tenta por login (preferência)
+  SELECT @cnt = COUNT(*)
+  FROM dbo.users
+  WHERE login = @identifier;
+
+  IF @cnt = 1
+  BEGIN
+    SELECT TOP 1 id, nome, login, senha
+    FROM dbo.users
+    WHERE login = @identifier;
+    RETURN;
+  END
+
+  -- 2) tenta por nome (pode ser ambíguo)
+  SELECT @cnt = COUNT(*)
+  FROM dbo.users
+  WHERE nome = @identifier;
+
+  IF @cnt = 0
+    THROW 50011, 'usuário não encontrado', 1;
+
+  IF @cnt > 1
+    THROW 50012, 'nome ambíguo (use o login)', 1;
+
+  SELECT TOP 1 id, nome, login, senha
+  FROM dbo.users
+  WHERE nome = @identifier;
+END
+GO
+
+/* =========================================================
+   PROCEDURE: criar sessão para user_id (retorna session_id)
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_sessions_create
+  @user_id INT,
+  @ttl_minutes INT = 10080  -- 7 dias
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 50013, 'user_id inválido', 1;
+
+  DECLARE @session_id UNIQUEIDENTIFIER = NEWID();
+  DECLARE @expires_at DATETIME2 = DATEADD(MINUTE, @ttl_minutes, SYSDATETIME());
+
+  INSERT INTO dbo.sessions (session_id, user_id, expires_at)
+  VALUES (@session_id, @user_id, @expires_at);
+
+  SELECT @session_id AS session_id, @expires_at AS expires_at;
+END
+GO
+
+/* =========================================================
+   PROCEDURE: obter sessão válida
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_sessions_get_valid
+  @session_id UNIQUEIDENTIFIER
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  SELECT session_id, user_id, expires_at
+  FROM dbo.sessions
+  WHERE session_id = @session_id
+    AND revoked_at IS NULL
+    AND expires_at > SYSDATETIME();
+END
+GO
+
+/* =========================================================
+   PROCEDURE: revogar sessão (logout)
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_sessions_revoke
+  @session_id UNIQUEIDENTIFIER
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  UPDATE dbo.sessions
+  SET revoked_at = SYSDATETIME()
+  WHERE session_id = @session_id
+    AND revoked_at IS NULL;
+END
+GO

@@ -101,6 +101,7 @@ Resetar banco (APAGA dados — dev apenas):
 ```bash
 docker compose down -v
 docker compose up -d --build db
+docker compose restart db
 ```
 
 ## Troubleshooting
