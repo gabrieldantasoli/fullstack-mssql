@@ -208,7 +208,7 @@ BEGIN
     arquivo_id INT NOT NULL,
     status_evento_id INT NOT NULL,
 
-    procurador_id INT NOT NULL, -- 1-1 com procurador via UNIQUE
+    procurador_id INT NULL,
 
     created_at DATETIME2 NOT NULL CONSTRAINT DF_evento_created DEFAULT (SYSDATETIME()),
 
@@ -220,8 +220,6 @@ BEGIN
 
     CONSTRAINT FK_evento_procurador
       FOREIGN KEY (procurador_id) REFERENCES dbo.procurador(id),
-
-    CONSTRAINT UQ_evento_procurador UNIQUE (procurador_id)
   );
 END
 GO
@@ -244,23 +242,11 @@ BEGIN
 
     pages_json NVARCHAR(MAX) NOT NULL CONSTRAINT DF_pages_json DEFAULT (N'[]'),
     CONSTRAINT CK_pages_json_isjson CHECK (ISJSON(pages_json) = 1),
-
-    procurador_id INT NULL,
     evento_id INT NULL,
-
-    CONSTRAINT FK_pages_procurador
-      FOREIGN KEY (procurador_id) REFERENCES dbo.procurador(id),
 
     CONSTRAINT FK_pages_evento
       FOREIGN KEY (evento_id) REFERENCES dbo.evento(id),
 
-    -- XOR: pertence a exatamente um dos dois
-    CONSTRAINT CK_pages_owner
-      CHECK (
-        (procurador_id IS NOT NULL AND evento_id IS NULL)
-        OR
-        (procurador_id IS NULL AND evento_id IS NOT NULL)
-      )
   );
 END
 GO
@@ -1401,3 +1387,261 @@ BEGIN
   ORDER BY e.created_at DESC, e.id DESC;
 END
 GO
+
+USE appdb;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.usp_eventos_list_by_arquivo
+  @user_id INT,
+  @arquivo_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 52001, 'user_id inválido', 1;
+
+  IF @arquivo_id IS NULL OR @arquivo_id <= 0
+    THROW 52002, 'arquivo_id inválido', 1;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.arquivo a
+    JOIN dbo.solicitacao s
+      ON s.gabinete_id = a.gabinete_id
+     AND s.user_id = @user_id
+     AND s.atendido = 1
+    WHERE a.id = @arquivo_id
+  )
+    THROW 52003, 'Sem permissão para ver os eventos deste arquivo.', 1;
+
+  SELECT
+    e.id,
+    e.nome,
+    e.created_at,
+    e.arquivo_id,
+    e.status_evento_id,
+    se.nome AS status_nome,
+    e.procurador_id,
+    pr.nome AS procurador_nome,
+
+    pe.pages_json AS evento_pages_json
+
+  FROM dbo.evento e
+  LEFT JOIN dbo.status_evento se ON se.id = e.status_evento_id
+  LEFT JOIN dbo.procurador pr ON pr.id = e.procurador_id
+
+  LEFT JOIN dbo.pages pe ON pe.evento_id = e.id
+
+
+  WHERE e.arquivo_id = @arquivo_id
+  ORDER BY e.id DESC;
+END
+GO
+
+USE appdb;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.usp_event_pages_update
+  @user_id INT,
+  @evento_id INT,
+  @pages_json NVARCHAR(MAX)
+AS
+BEGIN
+  SET NOCOUNT ON;
+  SET XACT_ABORT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 52001, 'user_id inválido', 1;
+
+  IF @evento_id IS NULL OR @evento_id <= 0
+    THROW 52002, 'evento_id inválido', 1;
+
+  IF @pages_json IS NULL OR ISJSON(@pages_json) <> 1
+    THROW 52003, 'pages_json inválido (precisa ser JSON array)', 1;
+
+  -- Permissão: precisa ser ADMIN no gabinete do arquivo do evento
+  IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.evento e
+    JOIN dbo.arquivo a       ON a.id = e.arquivo_id
+    JOIN dbo.solicitacao s  ON s.gabinete_id = a.gabinete_id
+                           AND s.user_id = @user_id
+                           AND s.atendido = 1
+    JOIN dbo.acesso ac      ON ac.id = s.acesso_id
+                           AND ac.nome = 'admin'
+    WHERE e.id = @evento_id
+  )
+    THROW 52004, 'Sem permissão para editar páginas deste evento.', 1;
+
+  BEGIN TRAN;
+
+  -- garante row em dbo.pages (1-1 por evento)
+  IF NOT EXISTS (SELECT 1 FROM dbo.pages WHERE evento_id = @evento_id)
+  BEGIN
+    INSERT INTO dbo.pages (evento_id, pages_json)
+    VALUES (@evento_id, N'[]');
+  END
+
+  DECLARE @new_json NVARCHAR(MAX);
+
+  ;WITH v AS (
+    SELECT DISTINCT TRY_CAST([value] AS INT) AS p
+    FROM OPENJSON(@pages_json)
+    WHERE TRY_CAST([value] AS INT) IS NOT NULL
+      AND TRY_CAST([value] AS INT) > 0
+  )
+  SELECT @new_json =
+    CASE
+      WHEN COUNT(*) = 0 THEN N'[]'
+      ELSE N'[' + STRING_AGG(CAST(p AS NVARCHAR(20)), N',') WITHIN GROUP (ORDER BY p) + N']'
+    END
+  FROM v;
+
+  UPDATE dbo.pages
+  SET pages_json = @new_json
+  WHERE evento_id = @evento_id;
+
+  COMMIT TRAN;
+
+  SELECT @evento_id AS evento_id, @new_json AS pages_json;
+END
+GO
+
+USE appdb;
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+
+/* =========================================================
+   LISTAR: todos os acessos do usuário (aprovados)
+   - fonte: dbo.solicitacao
+   - atendido = 1
+   - retorna is_owner para desabilitar ações no front
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_meus_acessos_list
+  @user_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 53001, 'user_id inválido', 1;
+
+  SELECT
+    s.id               AS solicitacao_id,
+    s.gabinete_id      AS gabinete_id,
+    g.nome             AS gabinete_nome,
+    s.acesso_id        AS acesso_id,
+    a.nome             AS acesso_nome,
+    s.created_at       AS created_at,
+    CASE WHEN g.user_id = @user_id THEN 1 ELSE 0 END AS is_owner
+  FROM dbo.solicitacao s
+  INNER JOIN dbo.gabinete g ON g.id = s.gabinete_id
+  INNER JOIN dbo.acesso  a ON a.id = s.acesso_id
+  WHERE s.user_id = @user_id
+    AND s.atendido = 1
+  ORDER BY s.created_at DESC, s.id DESC;
+END
+GO
+
+/* =========================================================
+   EDITAR: alterar tipo de acesso do usuário em um gabinete
+   - bloqueia se usuário for dono do gabinete
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_meus_acessos_update
+  @user_id INT,
+  @gabinete_id INT,
+  @acesso_nome NVARCHAR(20)
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 53002, 'user_id inválido', 1;
+
+  IF @gabinete_id IS NULL OR @gabinete_id <= 0
+    THROW 53003, 'gabinete_id inválido', 1;
+
+  IF @acesso_nome IS NULL OR LTRIM(RTRIM(@acesso_nome)) = N''
+    THROW 53004, 'acesso_nome é obrigatório', 1;
+
+  -- não deixa editar o dono do gabinete
+  IF EXISTS (
+    SELECT 1
+    FROM dbo.gabinete g
+    WHERE g.id = @gabinete_id AND g.user_id = @user_id
+  )
+    THROW 53005, 'Não é permitido editar o acesso do dono do gabinete.', 1;
+
+  DECLARE @acesso_id INT;
+  SELECT @acesso_id = id FROM dbo.acesso WHERE nome = @acesso_nome;
+
+  IF @acesso_id IS NULL
+    THROW 53006, 'acesso_nome inválido (viewer/editor/admin)', 1;
+
+  UPDATE dbo.solicitacao
+  SET acesso_id = @acesso_id
+  WHERE user_id = @user_id
+    AND gabinete_id = @gabinete_id
+    AND atendido = 1;
+
+  IF @@ROWCOUNT = 0
+    THROW 53007, 'Acesso não encontrado (ou não aprovado).', 1;
+
+  SELECT
+    s.id               AS solicitacao_id,
+    s.gabinete_id      AS gabinete_id,
+    g.nome             AS gabinete_nome,
+    s.acesso_id        AS acesso_id,
+    a.nome             AS acesso_nome,
+    s.created_at       AS created_at,
+    CASE WHEN g.user_id = @user_id THEN 1 ELSE 0 END AS is_owner
+  FROM dbo.solicitacao s
+  INNER JOIN dbo.gabinete g ON g.id = s.gabinete_id
+  INNER JOIN dbo.acesso  a ON a.id = s.acesso_id
+  WHERE s.user_id = @user_id
+    AND s.gabinete_id = @gabinete_id;
+END
+GO
+
+/* =========================================================
+   REMOVER: remover acesso do usuário a um gabinete
+   - bloqueia se usuário for dono do gabinete
+   ========================================================= */
+CREATE OR ALTER PROCEDURE dbo.usp_meus_acessos_delete
+  @user_id INT,
+  @gabinete_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+  SET XACT_ABORT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 53008, 'user_id inválido', 1;
+
+  IF @gabinete_id IS NULL OR @gabinete_id <= 0
+    THROW 53009, 'gabinete_id inválido', 1;
+
+  -- não deixa remover o dono do gabinete
+  IF EXISTS (
+    SELECT 1
+    FROM dbo.gabinete g
+    WHERE g.id = @gabinete_id AND g.user_id = @user_id
+  )
+    THROW 53010, 'Não é permitido remover o acesso do dono do gabinete.', 1;
+
+  DELETE FROM dbo.solicitacao
+  WHERE user_id = @user_id
+    AND gabinete_id = @gabinete_id
+    AND atendido = 1;
+
+  IF @@ROWCOUNT = 0
+    THROW 53011, 'Acesso não encontrado (ou não aprovado).', 1;
+END
+GO
+
+

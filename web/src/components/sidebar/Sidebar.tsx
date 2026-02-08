@@ -87,10 +87,10 @@ export default function Sidebar() {
             <span>Solicitações</span>
           </NavLink>
 
-          <NavLink to="/app/favoritos" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>
+          {/* <NavLink to="/app/favoritos" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>
             <IconFavoritos />
             <span>Favoritos</span>
-          </NavLink>
+          </NavLink> */}
           <NavLink to="/app/meus-acessos" className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ""}`}>
             <KeyRound className={styles.icon} aria-hidden="true" />
             <span>Meus Acessos</span>

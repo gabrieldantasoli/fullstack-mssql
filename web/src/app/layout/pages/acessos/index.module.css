@@ -1,0 +1,323 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titleIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.title {
+  margin: 0;
+}
+
+.subtitle {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.searchIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+}
+
+.searchInput {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 14px;
+}
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.sortIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+}
+
+.pagerLabel {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.select {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tableCard {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.state {
+  padding: 16px;
+  opacity: 0.8;
+  font-size: 13px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  vertical-align: middle;
+}
+
+.tdStrong {
+  font-weight: 700;
+}
+
+.tdMuted {
+  opacity: 0.8;
+}
+
+.badgeCell {
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.12);
+  font-size: 12px;
+}
+
+.ownerBadge {
+  margin-left: 10px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(0,0,0,.12);
+  opacity: 0.85;
+}
+
+.actions {
+  display: inline-flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.iconBtn,
+.iconBtnDanger {
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
+  padding: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.iconBtnDanger {
+  border-color: rgba(191,42,42,.25);
+}
+
+.iconBtn:disabled,
+.iconBtnDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.tableFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 12px;
+}
+
+.pageBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.pageInfo {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* Modal */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 50;
+}
+
+.modal {
+  width: min(520px, 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+}
+
+.modalHeader {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 16px;
+}
+
+.closeBtn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+.form {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.readonly {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.02);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.secondaryBtn,
+.primaryBtn,
+.dangerBtn {
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
+  font-weight: 700;
+}
+
+.primaryBtn {
+  border-color: rgba(4,157,217,.35);
+}
+
+.dangerBtn {
+  border-color: rgba(191,42,42,.35);
+}
+
+.confirmText {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
