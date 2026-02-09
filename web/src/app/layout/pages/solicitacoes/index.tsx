@@ -253,7 +253,7 @@ export default function SolicitacoesPage() {
                   <th>Usuário</th>
                   <th>Gabinete</th>
                   <th>Acesso</th>
-                  <th style={{ width: 96, textAlign: "right" }}>Ações</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -264,7 +264,7 @@ export default function SolicitacoesPage() {
                     <td className={styles.badgeCell}>
                       <span className={styles.badge}>{s.acesso_nome}</span>
                     </td>
-                    <td style={{ textAlign: "right" }}>
+                    <td>
                       <button
                         type="button"
                         className={styles.eyeBtn}

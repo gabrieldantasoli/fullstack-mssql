@@ -177,8 +177,13 @@
   border-collapse: collapse;
 }
 
+/* ✅ Centralizado: cabeçalho e células */
+.table thead th,
+.table tbody td {
+  text-align: center;
+}
+
 .table thead th {
-  text-align: left;
   font-size: 12px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -199,6 +204,10 @@
   background: rgba(4, 157, 217, 0.05);
 }
 
+.thActions {
+  width: 140px;
+}
+
 .tdStrong {
   font-weight: 900;
   color: rgba(15, 23, 42, 0.9);
@@ -216,18 +225,45 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 10px;
+  justify-content: center;
+  min-width: 120px;
+  padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(3, 166, 74, 0.25);
-  background: rgba(3, 166, 74, 0.10);
-  color: rgba(15, 23, 42, 0.85);
   font-weight: 900;
   font-size: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: rgba(15, 23, 42, 0.06);
+  color: rgba(15, 23, 42, 0.88);
+}
+
+/* ✅ Cores por status */
+.badgeNeutral {
+  border-color: rgba(15, 23, 42, 0.18);
+  background: rgba(15, 23, 42, 0.06);
+  color: rgba(15, 23, 42, 0.88);
+}
+
+.badgeWarn {
+  border-color: rgba(242, 192, 41, 0.45);
+  background: rgba(242, 192, 41, 0.16);
+  color: rgba(15, 23, 42, 0.92);
+}
+
+.badgeDanger {
+  border-color: rgba(220, 38, 38, 0.40);
+  background: rgba(220, 38, 38, 0.14);
+  color: rgba(15, 23, 42, 0.92);
+}
+
+.tdActions {
+  text-align: center;
 }
 
 .actions {
-    display: flex;
-    gap: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* Ações */
@@ -243,8 +279,8 @@
 }
 
 .ghostBtn:hover {
-  background: rgba(242, 192, 41, 0.12);
-  border-color: rgba(242, 192, 41, 0.28);
+  background: rgba(4, 157, 217, 0.10);
+  border-color: rgba(4, 157, 217, 0.22);
 }
 
 /* Footer paginação */

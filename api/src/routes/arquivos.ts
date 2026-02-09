@@ -69,8 +69,7 @@ router.get("/arquivos/:id/metadados", requireAuth, async (req, res) => {
 // GET /api/arquivos/:id/eventos
 router.get("/arquivos/:id/eventos", requireAuth, async (req, res) => {
     try {
-        const userId = 1;
-        const arquivoId = 1;
+        const arquivoId = Number(req.params.id);
 
         if (!Number.isFinite(arquivoId) || arquivoId <= 0) {
             return res.status(400).json({ error: "INVALID_ID", message: "ID do arquivo inválido." });
@@ -79,7 +78,6 @@ router.get("/arquivos/:id/eventos", requireAuth, async (req, res) => {
         const pool = await getPool();
         const result = await pool
             .request()
-            .input("user_id", sql.Int, userId)
             .input("arquivo_id", sql.Int, arquivoId)
             .execute("dbo.usp_eventos_list_by_arquivo");
 

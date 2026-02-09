@@ -321,3 +321,38 @@
   font-size: 14px;
   opacity: 0.9;
 }
+
+/* ✅ TABELA 100% CENTRALIZADA (cabeçalho + linhas) */
+.table th,
+.table td {
+  text-align: center;
+}
+
+/* ✅ “Ações” centralizadas (seu .actions hoje usa flex-end) */
+.actions {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ✅ Botões de ação centralizados dentro da célula (evita efeito de bloco) */
+.table tbody td:last-child .actions {
+  display: inline-flex;
+}
+
+/* ✅ Botão de apagar vermelho (ícone + borda + fundo) */
+.iconBtnDanger {
+  border-color: rgba(191, 42, 42, 0.35);
+  background: rgba(191, 42, 42, 0.10);
+  color: rgba(191, 42, 42, 0.95);
+}
+
+.iconBtnDanger:hover:not(:disabled) {
+  background: rgba(191, 42, 42, 0.16);
+  border-color: rgba(191, 42, 42, 0.55);
+}
+
+/* ✅ garante que o ícone herde a cor no botão */
+.iconBtnDanger .btnIcon {
+  color: inherit;
+}

@@ -35,6 +35,34 @@ function fmtDate(iso: string) {
   return d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
 
+function normalizeStatus(s: string) {
+  return String(s || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function statusLabel(s: string) {
+  const v = normalizeStatus(s);
+
+  if (v === "entregue") return "Entregue";
+  if (v === "processando" || v === "em processamento") return "Em processamento";
+  if (v === "processado") return "Processado";
+
+  // fallback
+  return s || "—";
+}
+
+function statusClass(s: string) {
+  const v = normalizeStatus(s);
+
+  if (v === "entregue") return styles.badgeNeutral;
+  if (v === "processando" || v === "em processamento") return styles.badgeWarn;
+  if (v === "processado") return styles.badgeDanger;
+
+  return styles.badgeNeutral;
+}
+
 export default function ProcessosPage() {
   const navigate = useNavigate();
 
@@ -55,8 +83,8 @@ export default function ProcessosPage() {
   async function loadLookups() {
     try {
       const [stRes, gbRes] = await Promise.all([
-        fetch("/api/status-arquivo", { credentials: "include" }),
-        fetch("/api/gabinetes/accessible", { credentials: "include" }),
+        fetch("/api/status-arquivo", { credentials: "include", cache: "no-store" }),
+        fetch("/api/gabinetes/accessible", { credentials: "include", cache: "no-store" }),
       ]);
 
       const st = await stRes.json().catch(() => []);
@@ -72,7 +100,7 @@ export default function ProcessosPage() {
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/arquivos", { credentials: "include" });
+      const res = await fetch("/api/arquivos", { credentials: "include", cache: "no-store" });
       const data = await res.json().catch(() => []);
       if (!res.ok) {
         toast.error(data?.message || "Erro ao carregar processos.");
@@ -276,7 +304,7 @@ export default function ProcessosPage() {
                   <th>Gabinete</th>
                   <th>Status</th>
                   <th>Criado em</th>
-                  <th style={{ width: 120, textAlign: "right" }}>Ações</th>
+                  <th className={styles.thActions}>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -285,10 +313,12 @@ export default function ProcessosPage() {
                     <td className={styles.tdStrong}>{a.nome_processo}</td>
                     <td className={styles.tdMuted}>{a.gabinete_nome}</td>
                     <td className={styles.badgeCell}>
-                      <span className={styles.badge}>{a.status_nome}</span>
+                      <span className={`${styles.badge} ${statusClass(a.status_nome)}`}>
+                        {statusLabel(a.status_nome)}
+                      </span>
                     </td>
                     <td className={styles.tdMuted}>{fmtDate(a.created_at)}</td>
-                    <td style={{ textAlign: "right" }}>
+                    <td className={styles.tdActions}>
                       <div className={styles.actions}>
                         <button
                           className={styles.ghostBtn}

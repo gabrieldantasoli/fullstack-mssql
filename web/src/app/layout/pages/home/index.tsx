@@ -1,13 +1,19 @@
-// Faça a atela de Home. Aqui deve ter algo do tipo: (ao centro da tela)
+import styles from "./index.module.css";
+import { Logo } from "../../../../components/logos/big";
 
-// Bem vindo ao gabin, (nome do usuário).
-// Aqui você pode analisar e contribuir com processos de triagem...
 
-export default function GabinetesPage() {
+export default function HomePage() {
+
   return (
-    <div>
-      <h1 style={{ marginTop: 0 }}>Home</h1>
-      <p>Home.</p>
+    <div className={styles.page}>
+      <div className={styles.center}>
+        <Logo />
+
+        <p className={styles.subtitle}>
+          Aqui você pode analisar e contribuir com processos de triagem: visualize documentos, confira metadados, acompanhe eventos e
+          organize páginas com rapidez e clareza.
+        </p>
+      </div>
     </div>
   );
 }

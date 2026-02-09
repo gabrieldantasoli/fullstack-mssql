@@ -260,7 +260,7 @@ export default function Acessos() {
                   <th>Gabinete</th>
                   <th>Acesso</th>
                   <th>Desde</th>
-                  <th style={{ width: 140, textAlign: "right" }}>Ações</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -274,7 +274,7 @@ export default function Acessos() {
                       <span className={styles.badge}>{acessoLabel(r.acesso_nome)}</span>
                     </td>
                     <td className={styles.tdMuted}>{fmtDate(r.created_at)}</td>
-                    <td style={{ textAlign: "right" }}>
+                    <td>
                       <div className={styles.actions}>
                         <button
                           type="button"

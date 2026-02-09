@@ -87,7 +87,7 @@
 
 /* ✅ 40% tabelas */
 .side {
-  flex: 0 0 40%;
+  flex: 0 0 calc(40% - 1rem);
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -186,7 +186,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  overflow-x: hidden; /* ✅ sem horizontal */
+  overflow-x: hidden; /* scroll horizontal fica no .tableWrap */
   padding: 12px 14px;
 }
 
@@ -198,14 +198,17 @@
 /* tabela */
 .tableWrap {
   min-height: 0;
-  overflow-x: hidden; /* ✅ impede horizontal */
+  max-width: 100%;
+  overflow-x: auto;         /* ✅ permite scroll horizontal quando precisar */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  table-layout: fixed; /* ✅ evita estourar largura */
+  table-layout: fixed; /* mantém layout estável */
 }
 
 .table th,
@@ -213,18 +216,18 @@
   padding: 10px 8px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   vertical-align: top;
-  word-break: break-word; /* ✅ quebra texto */
+  white-space: nowrap; /* ✅ evita “cortar” com quebra/overflow escondido */
 }
 
 .tdStrong {
   font-weight: 700;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tdValue {
-  word-break: break-word;
+  white-space: nowrap; /* ✅ valores grandes (ex.: nome do arquivo) rolam horizontalmente */
 }
 
 /* Eventos list */

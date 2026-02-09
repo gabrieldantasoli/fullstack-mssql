@@ -3,11 +3,11 @@ import toast from "react-hot-toast";
 import {
   Search,
   SlidersHorizontal,
-  Building2,
   ChevronLeft,
   ChevronRight,
   KeyRound,
   Send,
+  ArrowUpSquare,
 } from "lucide-react";
 import styles from "./index.module.css";
 
@@ -19,13 +19,34 @@ type Row = {
   owner_nome: string;
 
   minha_solicitacao_id: number | null;
-  minha_atendido: number | null; // null pendente, 1 aprovado, 0 rejeitado, null se não existe também (via minha_solicitacao_id)
+  minha_atendido: number | null; // null pendente, 1 aprovado, 0 rejeitado (e null se não existe via minha_solicitacao_id)
   meu_acesso_nome: string | null;
   minha_msg_pedido: string | null;
   minha_created_at: string | null;
 };
 
 type SortMode = "recent" | "oldest" | "az" | "za";
+
+function normalizeStatus(s: string) {
+  return String(s || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function statusText(r: Row) {
+  if (!r.minha_solicitacao_id) return "Sem solicitação";
+  if (r.minha_atendido === null) return "Pendente";
+  if (r.minha_atendido === 1) return `Aprovado (${r.meu_acesso_nome || "—"})`;
+  return "Rejeitado";
+}
+
+function statusClass(r: Row) {
+  if (!r.minha_solicitacao_id) return styles.badgeNeutral;
+  if (r.minha_atendido === null) return styles.badgeNeutral;
+  if (r.minha_atendido === 1) return styles.badgeSuccess;
+  return styles.badgeDanger;
+}
 
 export default function GabinetesTodosPage() {
   const [items, setItems] = useState<Row[]>([]);
@@ -47,7 +68,7 @@ export default function GabinetesTodosPage() {
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/gabinetes/all", { credentials: "include" });
+      const res = await fetch("/api/gabinetes/all", { credentials: "include", cache: "no-store" });
       const data = await res.json().catch(() => []);
       if (!res.ok) {
         toast.error(data?.message || "Erro ao carregar gabinetes.");
@@ -124,13 +145,6 @@ export default function GabinetesTodosPage() {
     setPage((p) => Math.min(totalPages, p + 1));
   }
 
-  function statusLabel(r: Row) {
-    if (!r.minha_solicitacao_id) return "Sem solicitação";
-    if (r.minha_atendido === null) return "Pendente";
-    if (r.minha_atendido === 1) return `Aprovado (${r.meu_acesso_nome})`;
-    return "Rejeitado";
-  }
-
   function canRequest(r: Row) {
     // Pode solicitar se não existe ou foi rejeitado (0).
     // Se pendente (null) ou aprovado (1), bloqueia.
@@ -184,7 +198,7 @@ export default function GabinetesTodosPage() {
       <div className={styles.header}>
         <div className={styles.titleWrap}>
           <div className={styles.titleIcon}>
-            <Building2 className={styles.icon} aria-hidden="true" />
+            <ArrowUpSquare className={styles.icon} aria-hidden="true" />
           </div>
           <div>
             <h1 className={styles.title}>Todos os gabinetes</h1>
@@ -241,7 +255,7 @@ export default function GabinetesTodosPage() {
                   <th>Descrição</th>
                   <th>Dono</th>
                   <th>Status</th>
-                  <th style={{ width: 200, textAlign: "right" }}>Ações</th>
+                  <th className={styles.thActions}>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -251,9 +265,9 @@ export default function GabinetesTodosPage() {
                     <td className={styles.tdMuted}>{g.descricao || "—"}</td>
                     <td className={styles.tdMuted}>{g.owner_nome}</td>
                     <td className={styles.badgeCell}>
-                      <span className={styles.badge}>{statusLabel(g)}</span>
+                      <span className={`${styles.badge} ${statusClass(g)}`}>{statusText(g)}</span>
                     </td>
-                    <td style={{ textAlign: "right" }}>
+                    <td className={styles.tdActions}>
                       <button
                         type="button"
                         className={styles.primaryBtn}

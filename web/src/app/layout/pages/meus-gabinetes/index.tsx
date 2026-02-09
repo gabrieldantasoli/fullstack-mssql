@@ -216,7 +216,7 @@ export default function GabinetesPage() {
                 <tr>
                   <th>Nome</th>
                   <th>Descrição</th>
-                  <th style={{ width: 120, textAlign: "right" }}>Ações</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,7 +224,7 @@ export default function GabinetesPage() {
                   <tr key={g.id}>
                     <td className={styles.tdStrong}>{g.nome}</td>
                     <td className={styles.tdMuted}>{g.descricao || "—"}</td>
-                    <td style={{ textAlign: "right" }}>
+                    <td>
                       <button type="button" className={styles.ghostBtn} onClick={() => toast("Abrir gabinete: em breve 🙂")}>
                         Abrir
                       </button>

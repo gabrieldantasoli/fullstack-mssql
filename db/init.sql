@@ -1392,28 +1392,21 @@ USE appdb;
 GO
 
 CREATE OR ALTER PROCEDURE dbo.usp_eventos_list_by_arquivo
-  @user_id INT,
   @arquivo_id INT
 AS
 BEGIN
   SET NOCOUNT ON;
 
-  IF @user_id IS NULL OR @user_id <= 0
-    THROW 52001, 'user_id inválido', 1;
-
   IF @arquivo_id IS NULL OR @arquivo_id <= 0
     THROW 52002, 'arquivo_id inválido', 1;
 
+  -- (Opcional, mas recomendado) garante que o arquivo existe
   IF NOT EXISTS (
     SELECT 1
     FROM dbo.arquivo a
-    JOIN dbo.solicitacao s
-      ON s.gabinete_id = a.gabinete_id
-     AND s.user_id = @user_id
-     AND s.atendido = 1
     WHERE a.id = @arquivo_id
   )
-    THROW 52003, 'Sem permissão para ver os eventos deste arquivo.', 1;
+    THROW 52004, 'Arquivo não encontrado.', 1;
 
   SELECT
     e.id,
@@ -1424,16 +1417,11 @@ BEGIN
     se.nome AS status_nome,
     e.procurador_id,
     pr.nome AS procurador_nome,
-
     pe.pages_json AS evento_pages_json
-
   FROM dbo.evento e
   LEFT JOIN dbo.status_evento se ON se.id = e.status_evento_id
   LEFT JOIN dbo.procurador pr ON pr.id = e.procurador_id
-
   LEFT JOIN dbo.pages pe ON pe.evento_id = e.id
-
-
   WHERE e.arquivo_id = @arquivo_id
   ORDER BY e.id DESC;
 END

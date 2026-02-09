@@ -1,0 +1,38 @@
+.page {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.center {
+  width: min(820px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 950;
+  color: rgba(15, 23, 42, 0.95);
+}
+
+.brand {
+  color: rgba(15, 23, 42, 0.95);
+}
+
+.user {
+  color: rgba(15, 23, 42, 0.82);
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 64ch;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.45;
+  color: rgba(15, 23, 42, 0.70);
+}

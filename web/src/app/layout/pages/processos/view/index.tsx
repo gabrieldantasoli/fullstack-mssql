@@ -15,7 +15,6 @@ type EventoRow = {
   procurador_id: number | null;
   procurador_nome: string | null;
 
-  // ✅ agora só pages do evento
   evento_pages_json: string | null;
 };
 
