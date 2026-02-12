@@ -13,6 +13,7 @@ import Home from "./app/layout/pages/home";
 import GabinetesTodosPage from "./app/layout/pages/gabinetes";
 import NovoProcessoPage from "./app/layout/pages/processos/novo";
 import ProcessoPdfPage from "./app/layout/pages/processos/view";
+import GabineteOpenPage from "./app/layout/pages/gabinetes/view";
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
 
         <Route path="processos" element={<ProcessosPage />} />
         <Route path="gabinetes" element={<GabinetesTodosPage />} />
+        <Route path="/app/gabinetes/:id" element={<GabineteOpenPage />} />
         <Route path="meus-gabinetes" element={<GabinetesPage />} />
         <Route path="solicitacoes" element={<SolicitacoesPage />} />
         <Route path="favoritos" element={<FavoritosPage />} />

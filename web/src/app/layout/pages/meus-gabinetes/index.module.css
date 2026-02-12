@@ -183,6 +183,9 @@
 }
 
 .ghostBtn {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
   height: 36px;
   padding: 0 12px;
   border-radius: 12px;

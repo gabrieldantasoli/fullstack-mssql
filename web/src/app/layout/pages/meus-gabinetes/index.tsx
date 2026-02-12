@@ -1,20 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Plus, Search, SlidersHorizontal, Building2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, SlidersHorizontal, Building2, ChevronLeft, ChevronRight, Trash2, Eye } from "lucide-react";
 import styles from "./index.module.css";
 
 type Gabinete = {
   id: number;
   nome: string;
   descricao: string | null;
-  user_id: number;
+  user_id: number; // dono
+  meu_acesso_nome?: "viewer" | "editor" | "admin"; // vindo do backend
 };
 
 type SortMode = "recent" | "oldest" | "az" | "za";
 
 export default function GabinetesPage() {
+  const navigate = useNavigate();
+
   const [items, setItems] = useState<Gabinete[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [meId, setMeId] = useState<number | null>(null);
 
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<SortMode>("recent");
@@ -27,10 +33,31 @@ export default function GabinetesPage() {
   const [descricao, setDescricao] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // deletar gabinete
+  const [delOpen, setDelOpen] = useState(false);
+  const [delGab, setDelGab] = useState<Gabinete | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  async function loadMe() {
+    try {
+      const res = await fetch("/api/me", { credentials: "include" });
+      const data = await res.json().catch(() => ({}));
+      const id =
+        data?.id ||
+        data?.user?.id ||
+        data?.profile?.id ||
+        data?.user_id;
+
+      if (Number.isFinite(Number(id)) && Number(id) > 0) setMeId(Number(id));
+    } catch {
+      // silencioso
+    }
+  }
+
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/gabinetes", { credentials: "include" });
+      const res = await fetch("/api/gabinetes", { credentials: "include", cache: "no-store" });
       const data = await res.json().catch(() => []);
       if (!res.ok) {
         toast.error(data?.message || "Erro ao carregar gabinetes.");
@@ -47,6 +74,7 @@ export default function GabinetesPage() {
   }
 
   useEffect(() => {
+    loadMe();
     load();
   }, []);
 
@@ -123,7 +151,6 @@ export default function GabinetesPage() {
       });
 
       const data = await res.json().catch(() => ({}));
-
       if (!res.ok) {
         toast.error(data?.message || "Erro ao criar gabinete.");
         return;
@@ -137,6 +164,46 @@ export default function GabinetesPage() {
       toast.error("Falha de rede ao criar gabinete.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function isAdmin(g: Gabinete) {
+    if (g.meu_acesso_nome) return g.meu_acesso_nome === "admin";
+    // fallback: dono => admin
+    if (meId && g.user_id === meId) return true;
+    return false;
+  }
+
+  function openDelete(g: Gabinete) {
+    if (!isAdmin(g)) {
+      toast.error("Apenas administradores podem deletar gabinete.");
+      return;
+    }
+    setDelGab(g);
+    setDelOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (!delGab) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/gabinetes/${delGab.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data?.message || "Erro ao deletar gabinete.");
+        return;
+      }
+      toast.success("Gabinete deletado.");
+      setDelOpen(false);
+      setDelGab(null);
+      await load();
+    } catch {
+      toast.error("Falha de rede ao deletar gabinete.");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -216,7 +283,7 @@ export default function GabinetesPage() {
                 <tr>
                   <th>Nome</th>
                   <th>Descrição</th>
-                  <th>Ações</th>
+                  <th style={{ width: 220, textAlign: "center" }}>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,10 +291,28 @@ export default function GabinetesPage() {
                   <tr key={g.id}>
                     <td className={styles.tdStrong}>{g.nome}</td>
                     <td className={styles.tdMuted}>{g.descricao || "—"}</td>
-                    <td>
-                      <button type="button" className={styles.ghostBtn} onClick={() => toast("Abrir gabinete: em breve 🙂")}>
+                    <td className={styles.tdActions}>
+                      <button
+                        type="button"
+                        className={styles.ghostBtn}
+                        onClick={() => navigate(`/app/gabinetes/${g.id}`)}
+                        title="Abrir gabinete"
+                      >
+                        <Eye className={styles.btnIcon} aria-hidden="true" />
                         Abrir
                       </button>
+
+                      {isAdmin(g) ? (
+                        <button
+                          type="button"
+                          className={styles.dangerBtn}
+                          onClick={() => openDelete(g)}
+                          title="Deletar gabinete"
+                        >
+                          <Trash2 className={styles.btnIcon} aria-hidden="true" />
+                          Deletar
+                        </button>
+                      ) : null}
                     </td>
                   </tr>
                 ))}
@@ -235,13 +320,7 @@ export default function GabinetesPage() {
             </table>
 
             <div className={styles.tableFooter}>
-              <button
-                type="button"
-                className={styles.pageBtn}
-                onClick={prevPage}
-                disabled={page <= 1}
-                aria-label="Página anterior"
-              >
+              <button type="button" className={styles.pageBtn} onClick={prevPage} disabled={page <= 1} aria-label="Página anterior">
                 <ChevronLeft className={styles.pageIcon} aria-hidden="true" />
               </button>
 
@@ -249,13 +328,7 @@ export default function GabinetesPage() {
                 Página <b>{page}</b> de <b>{totalPages}</b>
               </span>
 
-              <button
-                type="button"
-                className={styles.pageBtn}
-                onClick={nextPage}
-                disabled={page >= totalPages}
-                aria-label="Próxima página"
-              >
+              <button type="button" className={styles.pageBtn} onClick={nextPage} disabled={page >= totalPages} aria-label="Próxima página">
                 <ChevronRight className={styles.pageIcon} aria-hidden="true" />
               </button>
             </div>
@@ -263,6 +336,7 @@ export default function GabinetesPage() {
         )}
       </div>
 
+      {/* Modal criar gabinete */}
       {open && (
         <div className={styles.backdrop} role="dialog" aria-modal="true" aria-label="Criar gabinete">
           <div className={styles.modal}>
@@ -296,6 +370,38 @@ export default function GabinetesPage() {
               <p className={styles.hint}>
                 Ao criar, o sistema gera automaticamente uma <b>solicitação atendida</b> com acesso <b>admin</b> para você.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal deletar gabinete */}
+      {delOpen && delGab && (
+        <div className={styles.backdrop} role="dialog" aria-modal="true" aria-label="Deletar gabinete">
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Deletar gabinete</h2>
+              <button className={styles.closeBtn} onClick={() => setDelOpen(false)} type="button">
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.form}>
+              <p className={styles.confirmText}>
+                Tem certeza que deseja deletar o gabinete <b>{delGab.nome}</b>?
+              </p>
+              <p className={styles.warnText}>
+                Essa ação é <b>irreversível</b>.
+              </p>
+
+              <div className={styles.modalFooter}>
+                <button className={styles.secondaryBtn} onClick={() => setDelOpen(false)} type="button" disabled={deleting}>
+                  Cancelar
+                </button>
+                <button className={styles.dangerBtnSolid} onClick={confirmDelete} type="button" disabled={deleting}>
+                  {deleting ? "Deletando..." : "Deletar"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

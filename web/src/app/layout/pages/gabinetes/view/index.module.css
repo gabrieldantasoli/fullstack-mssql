@@ -1,0 +1,294 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(0,0,0,.10);
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 800;
+}
+
+.btnIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.titleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.titleIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.title {
+  margin: 0;
+}
+
+.subtitle {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.state {
+  padding: 16px;
+  opacity: 0.8;
+  font-size: 13px;
+}
+
+.gabHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.gabHeaderLeft {
+  min-width: 0;
+}
+
+.gabName {
+  font-weight: 950;
+  font-size: 16px;
+}
+
+.gabDesc {
+  margin-top: 4px;
+  opacity: 0.8;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.badgeRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.12);
+  font-size: 12px;
+  font-weight: 800;
+  background: #fff;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.collapseHeader {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  border: 0;
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.collapseTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+}
+
+.collapseIcon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.85;
+}
+
+.chev {
+  width: 18px;
+  height: 18px;
+  opacity: 0.85;
+}
+
+.sectionBody {
+  padding: 14px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  vertical-align: middle;
+}
+
+.tdStrong {
+  font-weight: 800;
+}
+
+.ownerBadge {
+  margin-left: 10px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid rgba(0,0,0,.12);
+  opacity: 0.85;
+}
+
+.tdActions {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.muted {
+  opacity: 0.6;
+}
+
+/* Danger buttons */
+.dangerBtn {
+  border: 1px solid rgba(191,42,42,.35);
+  background: #fff;
+  padding: 8px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 850;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dangerBtnSolid {
+  border: 1px solid rgba(191,42,42,.35);
+  background: rgba(191,42,42,.10);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.dangerBtn:hover,
+.dangerBtnSolid:hover {
+  background: rgba(191,42,42,.12);
+}
+
+/* Modal */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 50;
+}
+
+.modal {
+  width: min(540px, 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+}
+
+.modalHeader {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 16px;
+}
+
+.closeBtn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+.form {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.confirmText {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.92;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.secondaryBtn {
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
+  font-weight: 800;
+}
+
+.section th, .section td {
+  text-align: center;
+}

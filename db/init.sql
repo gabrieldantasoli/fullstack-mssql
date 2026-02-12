@@ -1633,3 +1633,164 @@ END
 GO
 
 
+CREATE OR ALTER PROCEDURE dbo.usp_gabinetes_list_for_user
+  @user_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 52001, 'user_id inválido', 1;
+
+  SELECT
+    g.id,
+    g.nome,
+    g.descricao,
+    g.user_id,
+    a.nome AS meu_acesso_nome
+  FROM dbo.gabinete g
+  JOIN dbo.solicitacao s
+    ON s.gabinete_id = g.id
+   AND s.user_id = @user_id
+   AND s.atendido = 1
+  JOIN dbo.acesso a
+    ON a.id = s.acesso_id
+  ORDER BY g.id DESC;
+END
+GO
+
+
+CREATE OR ALTER PROCEDURE dbo.usp_gabinete_get_for_user
+  @user_id INT,
+  @gabinete_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 52001, 'user_id inválido', 1;
+
+  IF @gabinete_id IS NULL OR @gabinete_id <= 0
+    THROW 52002, 'gabinete_id inválido', 1;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.solicitacao s
+    WHERE s.gabinete_id = @gabinete_id
+      AND s.user_id = @user_id
+      AND s.atendido = 1
+  )
+    THROW 52003, 'Sem permissão para acessar este gabinete.', 1;
+
+  SELECT TOP 1
+    g.id,
+    g.nome,
+    g.descricao,
+    g.user_id,
+    a.nome AS meu_acesso_nome
+  FROM dbo.gabinete g
+  JOIN dbo.solicitacao s
+    ON s.gabinete_id = g.id
+   AND s.user_id = @user_id
+   AND s.atendido = 1
+  JOIN dbo.acesso a
+    ON a.id = s.acesso_id
+  WHERE g.id = @gabinete_id;
+END
+GO
+
+
+CREATE OR ALTER PROCEDURE dbo.usp_gabinete_users_list
+  @user_id INT,
+  @gabinete_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @user_id IS NULL OR @user_id <= 0
+    THROW 52001, 'user_id inválido', 1;
+
+  IF @gabinete_id IS NULL OR @gabinete_id <= 0
+    THROW 52002, 'gabinete_id inválido', 1;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.solicitacao s
+    WHERE s.gabinete_id = @gabinete_id
+      AND s.user_id = @user_id
+      AND s.atendido = 1
+  )
+    THROW 52003, 'Sem permissão para ver usuários deste gabinete.', 1;
+
+  DECLARE @owner_id INT;
+  SELECT @owner_id = g.user_id
+  FROM dbo.gabinete g
+  WHERE g.id = @gabinete_id;
+
+  SELECT
+    u.id AS user_id,
+    u.nome AS user_nome,
+    a.nome AS acesso_nome,
+    CASE WHEN u.id = @owner_id THEN 1 ELSE 0 END AS is_owner
+  FROM dbo.solicitacao s
+  JOIN dbo.[users] u
+    ON u.id = s.user_id
+  JOIN dbo.acesso a
+    ON a.id = s.acesso_id
+  WHERE s.gabinete_id = @gabinete_id
+    AND s.atendido = 1
+  ORDER BY
+    CASE WHEN u.id = @owner_id THEN 0 ELSE 1 END,
+    u.nome ASC;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.usp_gabinete_user_remove_access
+  @actor_user_id INT,
+  @gabinete_id INT,
+  @target_user_id INT
+AS
+BEGIN
+  SET NOCOUNT ON;
+
+  IF @actor_user_id IS NULL OR @actor_user_id <= 0
+    THROW 52001, 'actor_user_id inválido', 1;
+
+  IF @gabinete_id IS NULL OR @gabinete_id <= 0
+    THROW 52002, 'gabinete_id inválido', 1;
+
+  IF @target_user_id IS NULL OR @target_user_id <= 0
+    THROW 52003, 'target_user_id inválido', 1;
+
+  DECLARE @owner_id INT;
+  SELECT @owner_id = g.user_id
+  FROM dbo.gabinete g
+  WHERE g.id = @gabinete_id;
+
+  IF @owner_id IS NULL
+    THROW 52004, 'Gabinete inexistente.', 1;
+
+  IF @target_user_id = @owner_id
+    THROW 52005, 'Não é permitido remover o dono do gabinete.', 1;
+
+  -- actor precisa ser admin
+  IF NOT EXISTS (
+    SELECT 1
+    FROM dbo.solicitacao s
+    JOIN dbo.acesso a ON a.id = s.acesso_id
+    WHERE s.gabinete_id = @gabinete_id
+      AND s.user_id = @actor_user_id
+      AND s.atendido = 1
+      AND LOWER(a.nome) = 'admin'
+  )
+    THROW 52006, 'Apenas admin pode remover permissões.', 1;
+
+  -- remove acesso do target (remove solicitação atendida)
+  DELETE FROM dbo.solicitacao
+  WHERE gabinete_id = @gabinete_id
+    AND user_id = @target_user_id
+    AND atendido = 1;
+
+  SELECT 1 AS ok;
+END
+GO

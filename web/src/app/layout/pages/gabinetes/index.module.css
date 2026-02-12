@@ -207,7 +207,10 @@
 }
 
 .tdActions {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .primaryBtn {
@@ -415,4 +418,18 @@
   margin: 0;
   font-weight: 700;
   color: rgba(15, 23, 42, 0.65);
+}
+
+.ghostBtn {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.75);
+  color: rgba(15, 23, 42, 0.85);
+  font-weight: 900;
+  cursor: pointer;
 }

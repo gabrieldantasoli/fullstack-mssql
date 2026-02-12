@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   SlidersHorizontal,
@@ -8,6 +9,7 @@ import {
   KeyRound,
   Send,
   ArrowUpSquare,
+  Eye,
 } from "lucide-react";
 import styles from "./index.module.css";
 
@@ -49,6 +51,7 @@ function statusClass(r: Row) {
 }
 
 export default function GabinetesTodosPage() {
+  const navigate = useNavigate();
   const [items, setItems] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -278,7 +281,16 @@ export default function GabinetesTodosPage() {
                         <KeyRound className={styles.btnIcon} aria-hidden="true" />
                         Solicitar
                       </button>
-                    </td>
+
+                      <button
+                        type="button"
+                        className={styles.ghostBtn}
+                        onClick={() => navigate(`/app/gabinetes/${g.id}`)}
+                        title="Abrir gabinete"
+                      >
+                        <Eye className={styles.btnIcon} aria-hidden="true" />
+                        Abrir
+                      </button>                    </td>
                   </tr>
                 ))}
               </tbody>
