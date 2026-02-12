@@ -1,4 +1,4 @@
-# fullstack-mssql
+# Gabin - Gabinetes Inteligentes
 
 Projeto fullstack com:
 - **DB:** SQL Server (Docker) com init automático (`db/init.sql`)
