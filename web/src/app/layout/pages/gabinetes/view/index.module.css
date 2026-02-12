@@ -292,3 +292,77 @@
 .section th, .section td {
   text-align: center;
 }
+
+
+
+
+.sectionTop {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.pagerLabel {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.select {
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 10px;
+  outline: 0;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Footer de paginação (igual outras telas) */
+.tableFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 0 0 0;
+}
+
+.pageBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.pageInfo {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.table {
+  width: 100%;
+  border: 2px solid rgb(131, 131, 131);
+  border-radius: 16px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: rgba(131, 131, 131, 0.205);
+}
